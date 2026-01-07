@@ -1,52 +1,43 @@
 plugins {
-    id 'java'
-    id 'org.springframework.boot' version '3.5.5'
-    id 'io.spring.dependency-management' version '1.1.0'
+  id 'java'
+  id 'maven-publish'
+  id 'org.springframework.boot' version '3.5.5'
+  id 'io.spring.dependency-management' version '1.1.7'
 }
 
-group 'com.example'
-version '1.0-SNAPSHOT'
+group = 'com.example'
+version = '1.0-SNAPSHOT'
 
 java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
-    }
+  toolchain {
+    languageVersion = JavaLanguageVersion.of(17)
+  }
 }
-
-apply plugin: 'maven-publish'
 
 publishing {
-    publications {
-        maven(MavenPublication) {
-            artifact("build/libs/my-app-$version"+".jar"){
-                extension 'jar'
-            }
-        }
+  publications {
+    create('maven', MavenPublication) {
+      artifact tasks.named('bootJar')
     }
+  }
 
-    repositories {
-        maven {
-            name 'nexus'
-            url "http://xx.xx.xx.xx:xxxx/repository/maven-snapshots/" 
-            allowInsecureProtocol = true
-            credentials {
-                username project.repoUser
-                password project.repoPassword
-            }
-        }
+  repositories {
+    maven {
+      name = 'nexus'
+      url = uri("http://{your_nexus_ip}:8081/repository/maven-snapshots/")
+      allowInsecureProtocol = true
+      credentials {
+        username = project.findProperty('nexusUsername')
+        password = project.findProperty('nexusPassword')
+      }
     }
-}
-
-repositories {
-    mavenCentral()
-    maven { url 'https://repo.spring.io/milestone' }
-    maven { url 'https://repo.spring.io/snapshot' }
+  }
 }
 
 dependencies {
-    implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'net.logstash.logback:logstash-logback-encoder:9.0'
-    implementation 'javax.annotation:javax.annotation-api:1.3.2'
+  implementation 'org.springframework.boot:spring-boot-starter-web'
+  implementation 'net.logstash.logback:logstash-logback-encoder:9.0'
+  implementation 'jakarta.annotation:jakarta.annotation-api'
 
-    testImplementation 'junit:junit:4.13.2'
+  testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
