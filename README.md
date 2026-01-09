@@ -63,7 +63,6 @@ From your local terminal, access the server with your admin user via SSH to begi
     * **Nexus Folder (`/opt/nexus-3.72.0-04`):** The **Installation Directory**. It contains the application binaries and runtime code. This should remain read-only for the service user to prevent unauthorized modifications to the software.
     * **Sonatype Folder (`/opt/sonatype-work`):** The **Data Directory**. This contains your repositories, blob stores, databases, and logs. This directory must be writable by the Nexus user and is the most important folder to include in your backup strategy.
 
-> [!TIP]
 > **Using Other Versions:**
 > While this guide uses version `3.72.0-04`, you can find alternative releases on the [Sonatype Download Archives](https://help.sonatype.com/en/download-archives---repository-manager-3.html). However, you must verify the [Nexus System Requirements](https://help.sonatype.com/en/sonatype-nexus-repository-system-requirements.html) as newer versions (3.87+) typically require **Java 21**, while older versions may require **Java 8 or 11** and may have different hardware needs.
 
@@ -423,5 +422,187 @@ Maven handles publication differently. It separates **Project Information** (sto
     <p align="center">
       <img src="assets/uploaded-maven-snapshot.png" alt="vm-selection" width="600"/>
     </p>
+
+</details>
+
+---
+
+<details>
+<summary><strong>Step 7: Blob Stores</strong></summary>
+
+In Nexus, a **Blob Store** is the actual physical storage layer where your binary files (the "blobs") are kept. While a **Repository** is a logical container that organizes your components (like Maven or npm), the **Blob Store** is the underlying engine that manages how those bits are written to a disk or a cloud bucket.
+
+### Why is it useful?
+
+Understanding Blob Stores is essential for scaling and maintaining your server:
+
+* **Storage Separation:** You can separate different types of data into different physical disks. For example, you can put "Snapshots" (which grow very fast) on a large, cheap disk and "Releases" on a smaller, faster SSD.
+* **Performance:** Spreading repositories across multiple blob stores can reduce I/O contention.
+* **Cleanup & Maintenance:** You can run "Compact blob store" tasks on specific stores to reclaim space from deleted artifacts without affecting the entire system.
+
+### The Default Blob Store
+
+When you install Nexus (as seen in **Step 1**), a default blob store named `default` is created automatically.
+
+* **Location:** By default, it is located at `/opt/sonatype-work/nexus3/blobs/default`.
+* **Usage:** If you don't create a new one, every repository you create will share this single storage space.
+
+### How to Create a New Blob Store
+
+You might want to create a dedicated blob store for a specific team or project to keep their data isolated.
+
+1. Log in as **admin**.
+2. Go to **Settings > Repository > Blob Stores**.
+3. Click **Create blob store**.
+4. **Type:** Select `File` (standard for local disks) or `S3` (if you are using AWS).
+5. **Name:** Give it a descriptive name (e.g., `gradle-snapshots-store`).
+6. **Path:** If using `File`, it will automatically suggest a path within your data directory.
+7. Click **Save**.
+
+<p align="center">
+  <img src="assets/create-blob-store.png" alt="vm-selection" width="600"/>
+</p>
+
+### Assigning a Repository to a Blob Store
+
+**Important:** A repository is assigned to a blob store at the moment of creation. You cannot easily change a repository's blob store once it has been created.
+
+1. Go to **Settings > Repository > Repositories**.
+2. Click **Create repository** (or select a new one to configure).
+3. In the configuration form, look for the **Storage** section.
+4. **Blob store:** Select the store you created from the dropdown menu.
+5. Click **Create repository**.
+
+Now, every JAR or artifact you upload (using the steps in **Step 6**) to this specific repository will be physically stored in the dedicated location you defined.
+
+</details>
+
+---
+
+<details>
+<summary><strong>Step 8: Cleanup Policies and Scheduled Tasks</strong></summary>
+
+Managing an artifact repository is not just about uploading files; it is also about preventing your storage from filling up.
+
+A **Cleanup Policy** is a set of rules that defines which components are no longer needed. Instead of deleting files manually, you set criteria and Nexus identifies them for removal.
+
+**Why use them?**
+
+* **Storage Efficiency:** Automatically removes old, unused development builds.
+* **Performance:** Keeps the repository index smaller and faster.
+* **Cost Control:** Prevents cloud storage costs from growing indefinitely.
+
+### 1. Create a Cleanup Policy
+
+We will create a policy to keep only the most recent snapshots.
+
+1. Log in as **admin**.
+2. Go to **Settings > Repository > Cleanup Policies**.
+3. Click **Create Cleanup Policy**.
+    <p align="center">
+      <img src="assets/create-cleanup-policies.png" alt="vm-selection" width="500"/>
+    </p>
+4. Assign **Name** and **Format**.
+    <p align="center">
+      <img src="assets/create-cleanup-policies2.png" alt="vm-selection" width="500"/>
+    </p>
+5. Choose the **Criteria** for cleaning.
+    <p align="center">
+      <img src="assets/create-cleanup-policies3.png" alt="vm-selection" width="500"/>
+    </p>
+6. Click **Save**.
+
+### 2. Assign the Policy to a Repository
+
+Creating the policy is only the first step. You must link it to one or more repositories for it to take effect.
+
+1. Go to **Settings > Repository > Repositories**.
+2. Select the repository.
+3. Scroll down to the **Cleanup** section.
+4. **Cleanup Policies:** Apply the created policy.
+5. Click **Save**.
+    <p align="center">
+      <img src="assets/attach-policy-to-repo.png" alt="vm-selection" width="600"/>
+    </p>
+
+> **Soft Delete:** When a cleanup policy runs, it performs a "soft delete". The components disappear from the UI and are marked for deletion, but the physical files still remain in the **Blob Store** (see **Step 7**) until a "Compact" task is run.
+
+### 3. Scheduled Tasks and Compacting Storage
+
+Nexus uses **Tasks** to run background operations like database backups or cleanup. When you create a Cleanup Policy, Nexus automatically creates a task named `Cleanup service`. However, to actually free up disk space, you need a **Compact blob store** task.
+
+**How to create a Compact Task:**
+
+1. Go to **Settings > System > Tasks**.
+2. Click **Create task**.
+    <p align="center">
+      <img src="assets/create-task.png" alt="vm-selection" width="600"/>
+    </p>
+3. **Task Type:** Select `Admin - Compact blob store`.
+4. **Name:** A name for your task.
+5. **Blob store:** Select your store (e.g., `default` or the one created in **Step 7**).
+6. **Schedule:** Set the task frequency. (e.g., Weekly, every Sunday at 02:00 AM).
+7. Click **Create task**.
+    <p align="center">
+      <img src="assets/create-task2.png" alt="vm-selection" width="600"/>
+    </p>
+
+### 4. Executing a Task Manually
+
+If your disk is almost full and you cannot wait for the scheduled time:
+
+1. Navigate to **Settings > System > Tasks**.
+2. Select your task from the list.
+3. Click the **Run** button at the top of the screen.
+    <p align="center">
+      <img src="assets/execute-task-manually.png" alt="vm-selection" width="700"/>
+    </p>
+
+</details>
+
+---
+
+<details>
+<summary><strong>Step 9: Working with the Nexus REST API</strong></summary>
+
+As you move towards automation and CI/CD, you won't always want to use the web interface. Nexus provides a powerful **REST API** that allows you to interact with the repository programmatically.
+
+### Access Control and Roles
+
+Everything you can do via the API is governed by the same **Role-Based Access Control (RBAC)** we set up in **Step 5**.
+
+* If your user only has `read` permissions, an API call to delete a repository will return a `403 Forbidden` error.
+* To use the API, you must provide your credentials via **Basic Authentication** (e.g., `curl -u username:password`).
+
+### Some Examples
+
+1. **List all Repositories:**
+
+    Useful for verifying the server is up and seeing what endpoints are available.
+
+    ```bash
+    curl -u developer:your_password -X GET "http://{nexus_ip}:8081/service/rest/v1/repositories"
+    ```
+
+2. **Search for a Component:**
+
+    Search for your uploaded artifact by its Group ID or Name.
+
+    ```bash
+    curl -u developer:your_password -X GET "http://{nexus_ip}:8081/service/rest/v1/search?repository=maven-snapshots&maven.groupId=com.example"
+    ```
+
+3. **Download the Latest Version of an Artifact:**
+
+    One of the most powerful features of the API is the ability to fetch the "latest" version without knowing the exact version number or timestamp. This is perfect for automation scripts that always need the most recent build.
+
+    ```bash
+    curl -u developer:your_password -L -X GET \
+    "http://{nexus_ip}:8081/service/rest/v1/search/assets/download?sort=version&repository=maven-snapshots&maven.groupId=com.example&maven.artifactId=my-app&maven.extension=jar" \
+    --output my-app-latest.jar
+    ```
+
+> Always consult the **API documentation page directly on your server** for the most accurate endpoints:
+> Navigate to: `http://{nexus_ip}:8081/#admin/system/api` (requires admin login).
 
 </details>
