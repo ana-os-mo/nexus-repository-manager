@@ -242,7 +242,7 @@ For security best practices, we should not share admin credentials. Instead, cre
     * Click **Save** at the bottom of the page.
 
     <p align="center">
-      <img src="assets/create-nexus-role.png" alt="vm-selection" width="500"/>
+      <img src="assets/create-nexus-role.png" alt="create-nexus-role" width="500"/>
     </p>
 
 2. **Create a Nexus User:** Create a new user and assign it the role you created above to access the snapshots repository.
@@ -253,7 +253,7 @@ For security best practices, we should not share admin credentials. Instead, cre
     * Click **Create local user**.
 
     <p align="center">
-      <img src="assets/create-nexus-user.png" alt="vm-selection" width="500"/>
+      <img src="assets/create-nexus-user.png" alt="create-nexus-user" width="500"/>
     </p>
 
 </details>
@@ -316,7 +316,7 @@ Use your terminal to open the `java-gradle-app` project in your local machine.
     You can get the Nexus URL from the repository.
 
     <p align="center">
-      <img src="assets/maven-snapshots-repository.png" alt="vm-selection" width="600"/>
+      <img src="assets/maven-snapshots-repository.png" alt="maven-snapshots-repository" width="600"/>
     </p>
 
 2. **Configure Credentials:**
@@ -347,7 +347,7 @@ Use your terminal to open the `java-gradle-app` project in your local machine.
     Go to Nexus **Browse server contents > Browse** and open the `maven-snapshots` reposiry. You should see your artifact structure created automatically.
 
     <p align="center">
-      <img src="assets/uploaded-gradle-snapshot.png" alt="vm-selection" width="600"/>
+      <img src="assets/uploaded-gradle-snapshot.png" alt="uploaded-gradle-snapshot" width="600"/>
     </p>
 
 ### Maven Project
@@ -420,7 +420,7 @@ Maven handles publication differently. It separates **Project Information** (sto
     ```
 
     <p align="center">
-      <img src="assets/uploaded-maven-snapshot.png" alt="vm-selection" width="600"/>
+      <img src="assets/uploaded-maven-snapshot.png" alt="uploaded-maven-snapshot" width="600"/>
     </p>
 
 </details>
@@ -460,7 +460,7 @@ You might want to create a dedicated blob store for a specific team or project t
 7. Click **Save**.
 
 <p align="center">
-  <img src="assets/create-blob-store.png" alt="vm-selection" width="600"/>
+  <img src="assets/create-blob-store.png" alt="create-blob-store" width="600"/>
 </p>
 
 ### Assigning a Repository to a Blob Store
@@ -500,15 +500,15 @@ We will create a policy to keep only the most recent snapshots.
 2. Go to **Settings > Repository > Cleanup Policies**.
 3. Click **Create Cleanup Policy**.
     <p align="center">
-      <img src="assets/create-cleanup-policies.png" alt="vm-selection" width="500"/>
+      <img src="assets/create-cleanup-policies.png" alt="create-cleanup-policies" width="500"/>
     </p>
 4. Assign **Name** and **Format**.
     <p align="center">
-      <img src="assets/create-cleanup-policies2.png" alt="vm-selection" width="500"/>
+      <img src="assets/create-cleanup-policies2.png" alt="create-cleanup-policies" width="500"/>
     </p>
 5. Choose the **Criteria** for cleaning.
     <p align="center">
-      <img src="assets/create-cleanup-policies3.png" alt="vm-selection" width="500"/>
+      <img src="assets/create-cleanup-policies3.png" alt="create-cleanup-policies" width="500"/>
     </p>
 6. Click **Save**.
 
@@ -522,7 +522,7 @@ Creating the policy is only the first step. You must link it to one or more repo
 4. **Cleanup Policies:** Apply the created policy.
 5. Click **Save**.
     <p align="center">
-      <img src="assets/attach-policy-to-repo.png" alt="vm-selection" width="600"/>
+      <img src="assets/attach-policy-to-repo.png" alt="attach-policy-to-repo" width="600"/>
     </p>
 
 > **Soft Delete:** When a cleanup policy runs, it performs a "soft delete". The components disappear from the UI and are marked for deletion, but the physical files still remain in the **Blob Store** (see **Step 7**) until a "Compact" task is run.
@@ -536,7 +536,7 @@ Nexus uses **Tasks** to run background operations like database backups or clean
 1. Go to **Settings > System > Tasks**.
 2. Click **Create task**.
     <p align="center">
-      <img src="assets/create-task.png" alt="vm-selection" width="600"/>
+      <img src="assets/create-task.png" alt="create-task" width="600"/>
     </p>
 3. **Task Type:** Select `Admin - Compact blob store`.
 4. **Name:** A name for your task.
@@ -544,7 +544,7 @@ Nexus uses **Tasks** to run background operations like database backups or clean
 6. **Schedule:** Set the task frequency. (e.g., Weekly, every Sunday at 02:00 AM).
 7. Click **Create task**.
     <p align="center">
-      <img src="assets/create-task2.png" alt="vm-selection" width="600"/>
+      <img src="assets/create-task2.png" alt="create-task" width="600"/>
     </p>
 
 ### 4. Executing a Task Manually
@@ -555,7 +555,7 @@ If your disk is almost full and you cannot wait for the scheduled time:
 2. Select your task from the list.
 3. Click the **Run** button at the top of the screen.
     <p align="center">
-      <img src="assets/execute-task-manually.png" alt="vm-selection" width="700"/>
+      <img src="assets/execute-task-manually.png" alt="execute-task-manually" width="700"/>
     </p>
 
 </details>
