@@ -4,6 +4,13 @@
 
 This project guides you through the process of setting up an artifact repository. You will learn how to install, secure, and configure **Sonatype Nexus Repository Manager** on a cloud server following best practices.
 
+### Project Description
+
+* Install and configure Nexus from scratch on a cloud server
+* Create a new user on Nexus with relevant permissions
+* Java Gradle Project: Build a Jar and upload it to Nexus
+* Java Maven Project: Build a Jar and upload it to Nexus
+
 ### Technologies Used
 
 * **Nexus Repository Manager**
@@ -12,13 +19,6 @@ This project guides you through the process of setting up an artifact repository
 * **Java** (OpenJDK 17)
 * **Gradle** (Gradle 9.2.1)
 * **Maven** (Apache Maven 3.9.12)
-
-### Project Description
-
-* Install and configure Nexus from scratch on a cloud server
-* Create a new user on Nexus with relevant permissions
-* Java Gradle Project: Build a Jar and upload it to Nexus
-* Java Maven Project: Build a Jar and upload it to Nexus
 
 ### Prerequisites
 
